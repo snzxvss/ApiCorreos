@@ -1,0 +1,12 @@
+{
+  "users": [
+    {
+      "authCode": "123456",
+      "attemptsLeft": 52
+    },
+    {
+      "authCode": "abcdef",
+      "attemptsLeft": 3
+    }
+  ]
+}
