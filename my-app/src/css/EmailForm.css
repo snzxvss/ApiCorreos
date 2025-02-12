@@ -67,3 +67,23 @@
 .email-table th {
   background-color: #f9f9f9;
 }
+
+.auth-dialog {
+  width: 30vw;
+  border: 1px solid #ccc;
+}
+
+.email-dialog {
+  width: 30vw;
+}
+
+@media (max-width: 768px) {
+  .auth-dialog {
+    width: 60vw;
+  }
+  .email-dialog {
+    width: 80vw;
+  }
+}
+
+

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const AUTH_API_URL = 'http://localhost:3000/authenticate';
+const AUTH_API_URL = 'http://64.23.232.12:3001/authenticate';
 
 export const authenticateUser = async (authCode) => {
   try {

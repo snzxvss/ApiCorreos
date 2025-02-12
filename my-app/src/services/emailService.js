@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/send-email';
+const API_URL = 'http://64.23.232.12:3001/send-email';
 
 export const sendEmail = async (emailData) => {
   try {

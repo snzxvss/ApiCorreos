@@ -2,14 +2,16 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import { existsSync, writeFileSync, readFileSync } from 'fs';
-import { join, dirname, resolve } from 'path';
+import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { spawn } from 'child_process';
+import he from 'he';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -31,10 +33,7 @@ const saveUsers = (users) => writeFileSync(usersFilePath, JSON.stringify({ users
 app.post('/authenticate', (req, res) => {
   const { authCode } = req.body;
   const users = getUsers();
-  console.log('Código de autenticación recibido:', authCode);
-  console.log('Usuarios:', users);
   const user = users.find(u => u.authCode === authCode);
-  console.log('Usuario encontrado:', user);
 
   if (user) {
     res.json({ attemptsLeft: user.attemptsLeft });
@@ -47,10 +46,7 @@ app.post('/send-email', (req, res) => {
   console.log('Datos recibidos:', req.body);
   const { from, to, subject, message, authCode } = req.body;
   const users = getUsers();
-  console.log('Código de autenticación recibido:', authCode);
-  console.log('Usuarios:', users);
   const user = users.find(u => u.authCode === authCode);
-  console.log('Usuario encontrado:', user);
 
   if (user && user.attemptsLeft > 0) {
     const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -63,22 +59,18 @@ app.post('/send-email', (req, res) => {
 
     console.log('Directorio de trabajo actual:', process.cwd());
 
-    const batPath = resolve(__dirname, 'sendmail.bat');
-    console.log('Ruta del archivo batch:', batPath);
+    // Verificar si el mensaje contiene HTML
+    const isHtml = message.trim().startsWith('<!DOCTYPE html>');
+    const decodedMessage = he.decode(message);
+    const formattedMessage = decodedMessage.replace(/'/g, "\\'");
 
-    const args = [
-      `"${from}"`,
-      `"${to}"`,
-      `"${subject}"`,
-      `"${message}"`
-    ];
+    const command = `/root/swaks --auth --server smtp.mailgun.org --port 587 --au send@alchoke.systems --ap sanzvoss --from ${from} --to ${to} --h-Subject: "${subject}" --h-From: "<${from}>" --body '${formattedMessage}' ${isHtml ? '--header "Content-Type: text/html"' : ''}`;
     
-    console.log('Executing command:', batPath, args);
+    console.log('Ejecutando comando:', command);
 
-    const childProcess = spawn('cmd.exe', ['/c', batPath, ...args], {
+    const childProcess = spawn(command, {
       cwd: __dirname,
-      shell: true,
-      windowsHide: true
+      shell: true
     });
 
     let stdoutData = '';
@@ -96,6 +88,7 @@ app.post('/send-email', (req, res) => {
 
     childProcess.on('close', (code) => {
       if (code !== 0) {
+        console.log(`Process exited with code ${code}`);
         console.error(`Process exited with code ${code}`);
         console.error('stderr:', stderrData);
         return res.status(500).json({ error: 'Error enviando el correo.' });
@@ -105,7 +98,7 @@ app.post('/send-email', (req, res) => {
     });
 
     childProcess.on('error', (error) => {
-      console.error('Process error:', error);
+      console.log('Process error:', error);
       res.status(500).json({ error: 'Error ejecutando el comando.' });
     });
   } else {

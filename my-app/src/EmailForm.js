@@ -57,20 +57,21 @@ function EmailForm() {
     }
 
     const emailData = { from, to, subject, message };
-    try {
-      await sendEmail(emailData);
-      Swal.fire({
-        icon: 'success',
-        title: 'Correo enviado',
-        text: 'El correo se ha enviado exitosamente.',
-      });
-    } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Hubo un error al enviar el correo.',
-      });
-    }
+      try {
+        await sendEmail(emailData);
+        setAttemptsLeft(attemptsLeft - 1);
+        Swal.fire({
+          icon: 'success',
+          title: 'Correo enviado',
+          text: 'El correo se ha enviado exitosamente.',
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Hubo un error al enviar el correo.',
+        });
+      }
   };
 
   const handleAddEmail = () => {
@@ -84,77 +85,77 @@ function EmailForm() {
   return (
     <div className="email-form-container">
 
-      <Dialog
-        header={<div style={{ textAlign: 'center', width: '100%' }}>Autenticación</div>}
-        visible={authModalVisible}
-        modal
-        closable={false}
-        style={{ width: '30vw', border: '1px solid #ccc' }}
-      >
-        <div className="auth-section">
-          <InputText
-            id="authCode"
-            type="text"
-            value={authCode}
-            onChange={(e) => setAuthCode(e.target.value)}
-            placeholder="Código de Autenticación"
-          />
-          {authError && <p style={{ color: 'red' }}>{authError}</p>}
-          <Button
-            label="Autenticar"
-            icon="pi pi-check"
-            onClick={handleAuthenticate}
-            className="p-mt-3"
-          />
-        </div>
-      </Dialog>
+  <Dialog
+    header={<div style={{ textAlign: 'center', width: '100%' }}>Autenticación</div>}
+    visible={authModalVisible}
+    modal
+    closable={false}
+    className="auth-dialog"
+  >
+    <div className="auth-section">
+      <InputText
+        id="authCode"
+        type="text"
+        value={authCode}
+        onChange={(e) => setAuthCode(e.target.value)}
+        placeholder="Código de Autenticación"
+      />
+      {authError && <p style={{ color: 'red' }}>{authError}</p>}
+      <Button
+        label="Autenticar"
+        icon="pi pi-check"
+        onClick={handleAuthenticate}
+        className="p-mt-3"
+      />
+    </div>
+  </Dialog>
 
-      <Dialog
-        header="Agregar Correos"
-        visible={emailModalVisible}
-        modal
-        onHide={() => setEmailModalVisible(false)}
-        style={{ width: '30vw' }}
-      >
-        <div className="p-field">
-          <label htmlFor="additionalEmail">Correo Adicional</label>
-          <div className="p-inputgroup">
-            <InputText
-              id="additionalEmail"
-              type="email"
-              value={to}
-              onChange={(e) => setTo(e.target.value)}
-              placeholder="Correo Adicional"
-            />
-            <Button
-              icon="pi pi-plus"
-              onClick={handleAddEmail}
-            />
-          </div>
-        </div>
-        <table className="email-table">
-          <thead>
-            <tr>
-              <th>Correo</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {additionalEmails.map((email, index) => (
-              <tr key={index}>
-                <td>{email}</td>
-                <td>
-                  <Button
-                    icon="pi pi-trash"
-                    className="p-button-danger"
-                    onClick={() => setAdditionalEmails(additionalEmails.filter(e => e !== email))}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Dialog>
+  <Dialog
+    header="Agregar Correos"
+    visible={emailModalVisible}
+    modal
+    onHide={() => setEmailModalVisible(false)}
+    className="email-dialog"
+  >
+    <div className="p-field">
+      <label htmlFor="additionalEmail">Correo Adicional</label>
+      <div className="p-inputgroup">
+        <InputText
+          id="additionalEmail"
+          type="email"
+          value={to}
+          onChange={(e) => setTo(e.target.value)}
+          placeholder="Correo Adicional"
+        />
+        <Button
+          icon="pi pi-plus"
+          onClick={handleAddEmail}
+        />
+      </div>
+    </div>
+    <table className="email-table">
+      <thead>
+        <tr>
+          <th>Correo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {additionalEmails.map((email, index) => (
+          <tr key={index}>
+            <td>{email}</td>
+            <td>
+              <Button
+                icon="pi pi-trash"
+                className="p-button-danger"
+                onClick={() => setAdditionalEmails(additionalEmails.filter(e => e !== email))}
+              />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </Dialog>
 
       {isAuthenticated && (
         <div className="email-form">
@@ -201,7 +202,13 @@ function EmailForm() {
             <div className="p-field p-grid p-justify-center">
               <div className="p-col-12 p-md-10">
                 <label htmlFor="message">Mensaje</label>
-                <Editor id="message" style={{ height: '320px' }} value={message} onTextChange={(e) => setMessage(e.htmlValue)} placeholder="Escribe tu mensaje aquí..." />
+                <textarea
+                  id="message"
+                  style={{ width: '100%', height: '320px' }}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Escribe tu mensaje aquí..."
+                />
               </div>
             </div>
             <Button

@@ -2,11 +2,11 @@
   "users": [
     {
       "authCode": "123456",
-      "attemptsLeft": 52
+      "attemptsLeft": 3
     },
     {
-      "authCode": "abcdef",
-      "attemptsLeft": 3
+      "authCode": "donjuan",
+      "attemptsLeft": 0
     }
   ]
 }
